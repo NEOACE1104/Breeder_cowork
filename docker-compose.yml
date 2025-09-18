@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app.db:/app/app.db
+      - ./results:/app/results
+    env_file:
+      - .env
+    container_name: cucumber_backend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:80" # Map host 5173 to container 80 (nginx)
+    depends_on:
+      - backend
+    container_name: cucumber_frontend
+
+volumes:
+  db_data:
+  results_data:

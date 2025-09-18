@@ -1,0 +1,52 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "data_qc": "Data & QC",
+        "gp": "Genomic Prediction",
+        "gwas": "GWAS",
+        "mating": "Mating Optimization",
+        "reports": "Reports"
+    },
+    "dashboard": {
+        "title": "Welcome to the Genomic Breeding Platform",
+        "description": "An integrated solution for cucumber genomic analysis and breeding optimization.",
+        "quick_links": "Quick Links"
+    },
+    "data_qc": {
+        "title": "Data Upload & Quality Control",
+        "upload_title": "Upload Training Dataset",
+        "upload_desc": "Upload the 'training_dataset_integrated.csv' file to begin.",
+        "upload_button": "Upload CSV",
+        "upload_success": "File uploaded successfully!",
+        "qc_params": "QC Parameters",
+        "run_qc": "Run QC",
+        "qc_results": "QC Results",
+        "initial_samples": "Initial Samples",
+        "initial_snps": "Initial SNPs",
+        "samples_after_qc": "Samples after QC",
+        "snps_after_qc": "SNPs after QC",
+        "mean_maf": "Mean MAF"
+    },
+    "gp": {
+        "title": "Genomic Prediction (GP)",
+        "description": "Train GBLUP models and predict Genomic Estimated Breeding Values (GEBVs)."
+    },
+    "gwas": {
+        "title": "Genome-Wide Association Study (GWAS)",
+        "description": "Identify SNPs associated with specific traits using OLS or LMM."
+    },
+    "mating": {
+        "title": "Genomic Mating Optimization",
+        "description": "Find optimal mating pairs to maximize genetic gain while managing diversity."
+    },
+    "reports": {
+        "title": "Analysis Reports",
+        "description": "View and download reports from your analysis runs."
+    },
+    "common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "submit": "Submit",
+        "run": "Run Analysis"
+    }
+}

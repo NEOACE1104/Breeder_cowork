@@ -1,0 +1,34 @@
+# Stage 1: Build stage with dependencies
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+# Set up a virtual environment
+ENV VIRTUAL_ENV=/app/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: Final stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy the virtual environment from the builder stage
+COPY --from=builder /app/venv /app/venv
+
+# Copy the application code
+COPY ./backend /app/backend
+
+# Activate the virtual environment
+ENV PATH="/app/venv/bin:$PATH"
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Command to run the application
+# Use gunicorn for production
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000", "backend.main:app"]

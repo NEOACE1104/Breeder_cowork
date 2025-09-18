@@ -1,0 +1,52 @@
+{
+    "nav": {
+        "dashboard": "대시보드",
+        "data_qc": "데이터 & QC",
+        "gp": "유전체 예측",
+        "gwas": "GWAS",
+        "mating": "교배 최적화",
+        "reports": "리포트"
+    },
+    "dashboard": {
+        "title": "유전체 육종 플랫폼에 오신 것을 환영합니다",
+        "description": "오이 유전체 분석 및 육종 최적화를 위한 통합 솔루션입니다.",
+        "quick_links": "빠른 링크"
+    },
+    "data_qc": {
+        "title": "데이터 업로드 & 품질 관리",
+        "upload_title": "훈련 데이터셋 업로드",
+        "upload_desc": "'training_dataset_integrated.csv' 파일을 업로드하여 분석을 시작하세요.",
+        "upload_button": "CSV 업로드",
+        "upload_success": "파일 업로드 성공!",
+        "qc_params": "QC 파라미터",
+        "run_qc": "QC 실행",
+        "qc_results": "QC 결과",
+        "initial_samples": "초기 샘플 수",
+        "initial_snps": "초기 SNP 수",
+        "samples_after_qc": "QC 후 샘플 수",
+        "snps_after_qc": "QC 후 SNP 수",
+        "mean_maf": "평균 MAF"
+    },
+    "gp": {
+        "title": "유전체 예측 (GP)",
+        "description": "GBLUP 모델을 훈련하고 유전체 추정 육종가(GEBV)를 예측합니다."
+    },
+    "gwas": {
+        "title": "전장 유전체 연관 분석 (GWAS)",
+        "description": "OLS 또는 LMM을 사용하여 특정 형질과 연관된 SNP를 식별합니다."
+    },
+    "mating": {
+        "title": "유전체 교배 최적화",
+        "description": "유전적 다양성을 관리하면서 유전적 이득을 극대화하는 최적의 교배 조합을 찾습니다."
+    },
+    "reports": {
+        "title": "분석 리포트",
+        "description": "분석 실행 리포트를 확인하고 다운로드합니다."
+    },
+    "common": {
+        "loading": "로딩 중...",
+        "error": "오류가 발생했습니다",
+        "submit": "제출",
+        "run": "분석 실행"
+    }
+}
