@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "breeder"
+version = "0.1.0"
+description = "Scientific breeding analysis toolkit for SNP and phenotype data"
+authors = [
+    {name = "Research Automation", email = "research@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+tests = [
+    "pytest>=7.0"
+]
+
+[project.scripts]
+breeder = "breeder.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-ra"
