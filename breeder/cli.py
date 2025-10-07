@@ -7,10 +7,16 @@ import csv
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .analysis import AssociationAnalyzer, PopulationStructureAnalyzer
+from .analysis import (
+    AdmixtureAnalyzer,
+    AssociationAnalyzer,
+    DendrogramAnalyzer,
+    PopulationStructureAnalyzer,
+)
 from .data import GenotypeDataset, PhenotypeDataset
 from .qc import GenotypeQC
 from .selection import GenomicBLUP
+from .plotting import admixture_plot, dendrogram_plot, gwas_manhattan, pca_scatter
 
 
 def _load_genotype(path: str, index_col: Optional[str], sep: str) -> GenotypeDataset:
@@ -79,6 +85,8 @@ def command_pca(args: argparse.Namespace) -> None:
     if args.variance_out:
         variance_rows = [[f"PC{i+1}", ratio] for i, ratio in enumerate(analyzer.explained_variance_ratio)]
         _write_csv(args.variance_out, ["component", "explained_variance_ratio"], variance_rows)
+    if args.plot_html:
+        pca_scatter(scores, genotype.individuals, analyzer.explained_variance_ratio, args.plot_html)
 
 
 def command_gwas(args: argparse.Namespace) -> None:
@@ -90,6 +98,8 @@ def command_gwas(args: argparse.Namespace) -> None:
     header = ["marker", "effect", "se", "t", "pvalue", "n"]
     rows = [[r["marker"], r["effect"], r["se"], r["t"], r["pvalue"], r["n"]] for r in results]
     _write_csv(args.output, header, rows)
+    if args.plot_html:
+        gwas_manhattan(results, args.plot_html)
 
 
 def command_gblup(args: argparse.Namespace) -> None:
@@ -117,6 +127,43 @@ def command_gblup(args: argparse.Namespace) -> None:
         _write_csv(target, ["individual", "prediction"], rows)
 
 
+def command_dendrogram(args: argparse.Namespace) -> None:
+    genotype = _load_genotype(args.genotype, args.geno_index, args.geno_sep)
+    analyzer = DendrogramAnalyzer(linkage=args.linkage)
+    analyzer.fit(genotype)
+    rows = [
+        [";".join(sorted(left)), ";".join(sorted(right)), distance]
+        for left, right, distance in analyzer.merges_
+    ]
+    _write_csv(args.output, ["left", "right", "distance"], rows)
+    if args.plot_html:
+        dendrogram_plot(analyzer.get_root(), args.plot_html)
+
+
+def command_admixture(args: argparse.Namespace) -> None:
+    genotype = _load_genotype(args.genotype, args.geno_index, args.geno_sep)
+    analyzer = AdmixtureAnalyzer(
+        n_populations=args.populations,
+        max_iter=args.max_iter,
+        tol=args.tol,
+        random_state=args.random_state,
+    )
+    analyzer.fit(genotype)
+    header = ["individual"] + [f"cluster_{i+1}" for i in range(args.populations)]
+    rows = [[ind] + list(props) for ind, props in zip(genotype.individuals, analyzer.q_matrix_)]
+    _write_csv(args.output, header, rows)
+    if args.allele_out:
+        allele_header = ["marker"] + [f"cluster_{i+1}" for i in range(args.populations)]
+        allele_rows = [
+            [marker]
+            + [analyzer.allele_frequencies_[k][idx] for k in range(args.populations)]
+            for idx, marker in enumerate(genotype.markers)
+        ]
+        _write_csv(args.allele_out, allele_header, allele_rows)
+    if args.plot_html:
+        admixture_plot(analyzer.q_matrix_, genotype.individuals, args.plot_html)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="breeder", description="Scientific breeding analysis toolkit")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -140,6 +187,7 @@ def build_parser() -> argparse.ArgumentParser:
     pca_parser.add_argument("--output", required=True)
     pca_parser.add_argument("--variance-out", dest="variance_out")
     pca_parser.add_argument("--no-scale", action="store_true")
+    pca_parser.add_argument("--plot-html", dest="plot_html")
     pca_parser.set_defaults(func=command_pca)
 
     gwas_parser = subparsers.add_parser("gwas", help="Run marker-wise association analysis")
@@ -156,6 +204,7 @@ def build_parser() -> argparse.ArgumentParser:
     gwas_parser.add_argument("--min-call-rate", dest="min_call_rate", type=float, default=0.9)
     gwas_parser.add_argument("--no-impute", dest="no_impute", action="store_true")
     gwas_parser.add_argument("--output", required=True)
+    gwas_parser.add_argument("--plot-html", dest="plot_html")
     gwas_parser.set_defaults(func=command_gwas)
 
     gblup_parser = subparsers.add_parser("gblup", help="Fit or evaluate a genomic BLUP model")
@@ -176,6 +225,28 @@ def build_parser() -> argparse.ArgumentParser:
     gblup_parser.add_argument("--predict-index", dest="predict_index", default=None)
     gblup_parser.add_argument("--predict-output", dest="predict_output", default="predictions.csv")
     gblup_parser.set_defaults(func=command_gblup)
+
+    dendro_parser = subparsers.add_parser("dendrogram", help="Generate a dendrogram from genotype data")
+    dendro_parser.add_argument("--genotype", required=True)
+    dendro_parser.add_argument("--geno-index", dest="geno_index", default=None)
+    dendro_parser.add_argument("--geno-sep", dest="geno_sep", default=",")
+    dendro_parser.add_argument("--linkage", choices=["average", "single", "complete"], default="average")
+    dendro_parser.add_argument("--output", required=True)
+    dendro_parser.add_argument("--plot-html", dest="plot_html")
+    dendro_parser.set_defaults(func=command_dendrogram)
+
+    admixture_parser = subparsers.add_parser("admixture", help="Estimate admixture proportions")
+    admixture_parser.add_argument("--genotype", required=True)
+    admixture_parser.add_argument("--geno-index", dest="geno_index", default=None)
+    admixture_parser.add_argument("--geno-sep", dest="geno_sep", default=",")
+    admixture_parser.add_argument("--populations", type=int, required=True)
+    admixture_parser.add_argument("--max-iter", dest="max_iter", type=int, default=500)
+    admixture_parser.add_argument("--tol", type=float, default=1e-4)
+    admixture_parser.add_argument("--random-state", dest="random_state", type=int, default=None)
+    admixture_parser.add_argument("--output", required=True)
+    admixture_parser.add_argument("--allele-out", dest="allele_out")
+    admixture_parser.add_argument("--plot-html", dest="plot_html")
+    admixture_parser.set_defaults(func=command_admixture)
 
     return parser
 

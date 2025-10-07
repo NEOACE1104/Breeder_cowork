@@ -9,11 +9,13 @@ mapping, and genomic prediction models suitable for research-scale studies.
 - **Flexible data ingestion** for genotype dosage matrices and phenotype traits.
 - **Quality control metrics** including call rate, minor allele frequency, heterozygosity, and
   Hardy–Weinberg equilibrium testing with configurable thresholds.
-- **Population structure characterisation** using PCA with optional scaling.
+- **Population structure characterisation** using PCA with optional scaling and dendrogram
+  clustering.
 - **Genome-wide association analysis** via ordinary least squares regression supporting
-  covariates, missing-data handling, and per-marker statistics.
+  covariates, missing-data handling, per-marker statistics, and interactive Manhattan plots.
 - **Genomic BLUP predictions** with ridge regularisation, reusable marker effects, and
   cross-validation diagnostics.
+- **Admixture estimation** using a lightweight NMF solver with stacked-bar visualisations.
 - **Command line interface** for reproducible pipelines (QC, PCA, GWAS, GBLUP).
 
 ## Installation
@@ -52,7 +54,8 @@ breeder pca \
   --geno-index id \
   --components 5 \
   --output pcs.csv \
-  --variance-out pca_variance.csv
+  --variance-out pca_variance.csv \
+  --plot-html pca_plot.html
 ```
 
 ### Genome-wide association study
@@ -66,7 +69,30 @@ breeder gwas \
   --pheno-index id \
   --covariates path/to/covariates.csv \
   --cov-index id \
-  --output gwas_results.csv
+  --output gwas_results.csv \
+  --plot-html gwas_plot.html
+```
+
+### Dendrogram clustering
+
+```bash
+breeder dendrogram \
+  --genotype path/to/genotypes.csv \
+  --geno-index id \
+  --output dendrogram_merges.csv \
+  --plot-html dendrogram.html
+```
+
+### Admixture analysis
+
+```bash
+breeder admixture \
+  --genotype path/to/genotypes.csv \
+  --geno-index id \
+  --populations 3 \
+  --output admixture_q.csv \
+  --allele-out admixture_p.csv \
+  --plot-html admixture.html
 ```
 
 ### Genomic BLUP

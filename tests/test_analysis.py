@@ -1,7 +1,12 @@
 import csv
 import pytest
 
-from breeder.analysis import AssociationAnalyzer, PopulationStructureAnalyzer
+from breeder.analysis import (
+    AdmixtureAnalyzer,
+    AssociationAnalyzer,
+    DendrogramAnalyzer,
+    PopulationStructureAnalyzer,
+)
 from breeder.data import GenotypeDataset, PhenotypeDataset
 
 
@@ -34,3 +39,23 @@ def test_association_analyzer_runs_linear_models():
     m3 = next(entry for entry in results if entry["marker"] == "M3")
     assert 0.0 <= m3["pvalue"] <= 1.0
     assert not any(entry["effect"] != entry["effect"] for entry in results)  # no NaNs
+
+
+def test_dendrogram_analyzer_produces_hierarchy():
+    genotype = GenotypeDataset.from_csv("tests/data/genotype.csv", index_col="id")
+    analyzer = DendrogramAnalyzer()
+    analyzer.fit(genotype)
+    root = analyzer.get_root()
+    assert sorted(root.members()) == sorted(genotype.individuals)
+    assert len(analyzer.merges_) == len(genotype.individuals) - 1
+
+
+def test_admixture_analyzer_generates_membership():
+    genotype = GenotypeDataset.from_csv("tests/data/genotype.csv", index_col="id")
+    analyzer = AdmixtureAnalyzer(n_populations=2, max_iter=50, tol=1e-5, random_state=42)
+    analyzer.fit(genotype)
+    q = analyzer.q_matrix_
+    assert len(q) == len(genotype.individuals)
+    for row in q:
+        assert pytest.approx(sum(row), abs=1e-6) == 1.0
+        assert all(value >= 0 for value in row)
